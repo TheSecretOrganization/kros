@@ -1,2 +1,2 @@
-# krOS
+# kros
 kOS but in Rust
