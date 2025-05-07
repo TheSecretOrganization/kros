@@ -13,7 +13,7 @@ assignees: ''
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
 **Documentation**
-Please provide a link to a documentation that would help implementation.
+Please provide a link to documentation that helps with implementation.
 
 **Additional context**
 Add any other context or screenshots about the feature request here.

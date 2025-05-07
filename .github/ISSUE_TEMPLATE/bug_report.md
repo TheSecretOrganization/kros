@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Stacktrace**
-Please provide a stackstrace that would help debugging.
+Please provide a stacktrace that will help with debugging.
 ```
 Provide it here.
 ```

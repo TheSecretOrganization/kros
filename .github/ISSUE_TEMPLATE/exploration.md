@@ -8,10 +8,10 @@ assignees: ''
 ---
 
 **Needs**
-Why do we needs to explore this subject?
+Why do we need to explore this subject?
 
 **Impacts**
-What does the solution, will impact?
+What will the solution impact?
 
 **Available choices**
 | Name | Pros | Cons |
