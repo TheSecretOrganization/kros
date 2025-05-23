@@ -1,0 +1,6 @@
+/target
+iso/
+*.iso
+*.bin
+*.o
+*.d
