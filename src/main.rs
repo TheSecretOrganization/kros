@@ -4,19 +4,16 @@
 use core::panic::PanicInfo;
 
 mod io;
+mod vga_buffer;
+
 #[unsafe(no_mangle)]
 pub fn kmain() {
-    let vga_buffer = 0xb8000 as *mut u8;
-
-    for (i, &byte) in b"Hello World!".iter().enumerate() {
-        unsafe {
-            core::ptr::write_volatile(vga_buffer.offset((i * 2) as isize), byte);
-            core::ptr::write_volatile(vga_buffer.offset((i * 2 + 1) as isize), 0x0f);
-        }
-    }
+    clear_screen!();
+    println!("42");
 }
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }
