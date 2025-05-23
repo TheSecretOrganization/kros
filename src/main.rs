@@ -3,6 +3,7 @@
 
 use core::panic::PanicInfo;
 
+mod io;
 #[unsafe(no_mangle)]
 pub fn kmain() {
     let vga_buffer = 0xb8000 as *mut u8;
