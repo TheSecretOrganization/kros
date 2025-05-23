@@ -9,8 +9,8 @@ pub fn kmain() {
 
     for (i, &byte) in b"Hello World!".iter().enumerate() {
         unsafe {
-            *vga_buffer.offset((i * 2) as isize) = byte;
-            *vga_buffer.offset((i * 2 + 1) as isize) = 0x0f;
+            core::ptr::write_volatile(vga_buffer.offset((i * 2) as isize), byte);
+            core::ptr::write_volatile(vga_buffer.offset((i * 2 + 1) as isize), 0x0f);
         }
     }
 }
