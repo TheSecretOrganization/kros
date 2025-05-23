@@ -7,20 +7,19 @@ GRUB_CFG    := grub.cfg
 TARGET 		:= i686-unknown-none
 ELF         := target/$(TARGET)/debug/$(NAME)
 ISO         := $(NAME).iso
-BIN			:= $(NAME).bin
 OBJ 		:= $(shell find $(SRC_DIR) -type f -name '*.o')
 
-.PHONY: all re run clean
+.PHONY: all iso build re run clean
 
-all: $(ISO)
+all: iso
 
-$(ISO): $(GRUB_CFG) $(BIN)
+iso: $(GRUB_CFG) build
 	mkdir -p $(GRUB_DIR)
 	cp $(GRUB_CFG) $(GRUB_DIR)
 	cp $(ELF) $(BOOT_DIR)/$(NAME).elf
 	grub-mkrescue -o $(ISO) $(ISO_DIR)
 
-$(BIN):
+build:
 	cargo build
 
 re: clean
@@ -31,4 +30,4 @@ run: all
 
 clean:
 	cargo clean
-	rm -rf $(BIN) $(ISO) $(ISO_DIR) $(OBJ)
+	rm -rf $(ISO) $(ISO_DIR) $(OBJ)
