@@ -161,6 +161,7 @@ impl Writer {
         } else {
             self.trim_back();
         }
+        self.move_cursor();
     }
 
     fn clear_row(&mut self, row: usize) {
