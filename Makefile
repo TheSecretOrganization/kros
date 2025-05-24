@@ -7,8 +7,10 @@ GRUB_CFG    := grub.cfg
 TARGET 		:= i686-unknown-none
 ELF         := target/$(TARGET)/debug/$(NAME)
 ISO         := $(NAME).iso
+RUST_SRC	:= $(shell find . -type f -name '*.rs')
 OBJ 		:= $(shell find $(SRC_DIR) -type f -name '*.o')
 
+.PHONY: all iso build re run clean check-format format
 
 all: iso
 
@@ -34,3 +36,10 @@ clean:
 	@echo "Cleaning repository..."
 	@cargo clean
 	@rm -rf $(ISO) $(ISO_DIR) $(OBJ)
+
+check-format:
+	@rustfmt --check $(RUST_SRC) || (echo "Formatting issues detected! Run 'make format' to fix." && exit 1)
+
+format:
+	@echo "Formatting source code..."
+	@rustfmt $(RUST_SRC)
