@@ -9,25 +9,25 @@ fn main() {
         let entry = entry.expect("Failed to read directory entry");
         let path = entry.path();
 
-        if let Some(ext) = path.extension() {
-            if ext == "asm" {
-                let asm_path = path.to_str().expect("Invalid path");
-                let obj_path = path.with_extension("o");
-                let obj_str = obj_path.to_str().expect("Invalid object path");
+        if let Some(ext) = path.extension()
+            && ext == "asm"
+        {
+            let asm_path = path.to_str().expect("Invalid path");
+            let obj_path = path.with_extension("o");
+            let obj_str = obj_path.to_str().expect("Invalid object path");
 
-                println!("cargo:rerun-if-changed={}", asm_path);
+            println!("cargo:rerun-if-changed={asm_path}");
 
-                let status = Command::new("nasm")
-                    .args(&["-f", "elf32", asm_path, "-o", obj_str])
-                    .status()
-                    .expect("Failed to assemble .asm file");
+            let status = Command::new("nasm")
+                .args(["-f", "elf32", asm_path, "-o", obj_str])
+                .status()
+                .expect("Failed to assemble .asm file");
 
-                if !status.success() {
-                    panic!("nasm failed on {}", asm_path);
-                }
-
-                println!("cargo:rustc-link-arg={}", obj_str);
+            if !status.success() {
+                panic!("nasm failed on {asm_path}");
             }
+
+            println!("cargo:rustc-link-arg={obj_str}");
         }
     }
 }
