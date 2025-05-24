@@ -4,7 +4,7 @@
 use core::panic::PanicInfo;
 
 #[unsafe(no_mangle)]
-pub fn kmain() {
+pub extern "C" fn kmain() {
     let vga_buffer = 0xb8000 as *mut u8;
 
     for (i, &byte) in b"Hello World!".iter().enumerate() {
