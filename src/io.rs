@@ -26,3 +26,8 @@ pub fn inb(port: u16) -> u8 {
     }
     ret
 }
+
+#[inline(always)]
+pub fn wait() {
+    outb(0x80, 0);
+}
