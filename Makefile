@@ -10,7 +10,7 @@ ISO         := $(NAME).iso
 RUST_SRC	:= $(shell find . -type f -name '*.rs')
 OBJ 		:= $(shell find $(SRC_DIR) -type f -name '*.o')
 
-.PHONY: all iso build re run clean check-format format
+.PHONY: all iso build re run clean check-format format check-lint
 
 all: iso
 
@@ -43,3 +43,7 @@ check-format:
 format:
 	@echo "Formatting source code..."
 	@rustfmt $(RUST_SRC)
+
+check-lint:
+	@echo "Calling linter on source code..."
+	@cargo clippy -- -D warnings
