@@ -8,7 +8,6 @@ mod vga_buffer;
 
 #[unsafe(no_mangle)]
 pub fn kmain() {
-    clear_screen!();
     println!("42");
 }
 

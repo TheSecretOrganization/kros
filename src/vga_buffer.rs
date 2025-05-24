@@ -18,6 +18,34 @@ const CURSOR_HIGH: u8 = 0x0E;
 const BLANK: u8 = b' ';
 const UNPRINTABLE: u8 = b'*';
 
+lazy_static! {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer::new());
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
+}
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! clear_screen {
+    () => {
+        $crate::vga_buffer::WRITER.lock().clear_screen()
+    };
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -70,6 +98,17 @@ pub struct Writer {
 }
 
 impl Writer {
+    pub fn new() -> Writer {
+        let mut writer = Writer {
+            row_position: 0,
+            column_position: 0,
+            color_code: ColorCode::new(DEFAULT_FOREGROUND, DEFAULT_BACKGROUND),
+            buffer: unsafe { &mut *(BUFFER_ADDRESS as *mut Buffer) },
+        };
+        writer.clear_screen();
+        writer
+    }
+
     fn read_byte_at(&mut self, row: usize, col: usize) -> u8 {
         unsafe { read_volatile(&self.buffer.chars[row][col]).ascii_character }
     }
@@ -185,37 +224,4 @@ impl fmt::Write for Writer {
         self.write_string(s);
         Ok(())
     }
-}
-
-lazy_static! {
-    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
-        row_position: 0,
-        column_position: 0,
-        color_code: ColorCode::new(DEFAULT_FOREGROUND, DEFAULT_BACKGROUND),
-        buffer: unsafe { &mut *(BUFFER_ADDRESS as *mut Buffer) },
-    });
-}
-
-#[doc(hidden)]
-pub fn _print(args: fmt::Arguments) {
-    use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
-}
-
-#[macro_export]
-macro_rules! print {
-    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
-}
-
-#[macro_export]
-macro_rules! println {
-    () => ($crate::print!("\n"));
-    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
-}
-
-#[macro_export]
-macro_rules! clear_screen {
-    () => {
-        $crate::vga_buffer::WRITER.lock().clear_screen()
-    };
 }
