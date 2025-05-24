@@ -21,6 +21,6 @@ extern kmain
 _start:
 	mov esp, stack_top
 	call kmain
-	; sti
+	sti
 loop:
 	jmp loop
