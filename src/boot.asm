@@ -20,7 +20,7 @@ extern kmain
 
 _start:
 	mov esp, stack_top
+	cli
 	call kmain
-	; sti
 loop:
 	jmp loop
