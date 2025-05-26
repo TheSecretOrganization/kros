@@ -181,7 +181,7 @@ impl Writer {
         }
     }
 
-    fn trim_back(&mut self) {
+    fn move_to_previous_non_blank(&mut self) {
         while self.row_position > 0 {
             self.row_position -= 1;
             self.column_position = BUFFER_WIDTH - 1;
@@ -201,7 +201,7 @@ impl Writer {
             self.column_position -= 1;
             self.write_byte_at(BLANK, self.row_position, self.column_position);
         } else {
-            self.trim_back();
+            self.move_to_previous_non_blank();
         }
         self.move_cursor();
     }
