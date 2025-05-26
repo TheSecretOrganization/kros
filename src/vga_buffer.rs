@@ -175,6 +175,7 @@ impl Writer {
                     self.write_byte_at(character, row - 1, col);
                 }
             }
+            self.clear_row(BUFFER_HEIGHT - 1);
         }
     }
 
