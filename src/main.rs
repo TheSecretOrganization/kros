@@ -7,7 +7,7 @@ mod io;
 mod vga_buffer;
 
 #[unsafe(no_mangle)]
-pub fn kmain() {
+pub extern "C" fn kmain() {
     println!("42");
 }
 
