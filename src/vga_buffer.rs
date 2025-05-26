@@ -169,11 +169,13 @@ impl Writer {
             self.row_position += 1;
         } else {
             self.row_position = BUFFER_HEIGHT - 1;
-            for row in 1..BUFFER_HEIGHT {
-                for col in 0..BUFFER_WIDTH {
-                    let character = self.read_byte_at(row, col);
-                    self.write_byte_at(character, row - 1, col);
-                }
+            unsafe {
+                let buffer_ptr = BUFFER_ADDRESS as *mut ScreenChar;
+                core::ptr::copy(
+                    buffer_ptr.add(BUFFER_WIDTH),
+                    buffer_ptr,
+                    BUFFER_WIDTH * (BUFFER_HEIGHT - 1),
+                );
             }
             self.clear_row(BUFFER_HEIGHT - 1);
         }
