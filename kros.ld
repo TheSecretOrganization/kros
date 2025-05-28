@@ -1,31 +1,39 @@
 ENTRY(_start)
 OUTPUT_FORMAT("elf32-i386")
 
-SECTIONS {
+SECTIONS
+{
     . = 1M;
 
-    .multiboot :
+    .multiboot : ALIGN(4K)
     {
         KEEP(*(.multiboot))
     }
 
-    .text :
+    .text : ALIGN(4K)
     {
         *(.text*)
     }
 
-    .rodata :
+    .rodata : ALIGN(4K)
     {
         *(.rodata*)
     }
 
-    .data :
+    .data : ALIGN(4K)
     {
         *(.data*)
     }
 
-    .bss :
+    .bss : ALIGN(4K)
     {
+        *(COMMON)
         *(.bss*)
+    }
+
+    /DISCARD/ :
+    {
+        *(.got.plt)
+        *(.plt)
     }
 }
