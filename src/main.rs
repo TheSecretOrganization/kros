@@ -4,6 +4,7 @@
 use core::panic::PanicInfo;
 
 mod io;
+mod spin;
 mod vga_buffer;
 
 #[unsafe(no_mangle)]
