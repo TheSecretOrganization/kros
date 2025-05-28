@@ -4,8 +4,6 @@ use core::{
     ptr::{read_volatile, write_volatile},
 };
 
-const DEFAULT_FOREGROUND: Color = Color::LightBlue;
-const DEFAULT_BACKGROUND: Color = Color::Black;
 const BUFFER_ADDRESS: usize = 0xb8000;
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
@@ -71,6 +69,10 @@ impl ColorCode {
     fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
+
+    const fn default() -> ColorCode {
+        ColorCode::new(Color::LightBlue, Color::Black)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -80,9 +82,27 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
+impl ScreenChar {
+    const fn default() -> Self {
+        ScreenChar {
+            ascii_character: b' ',
+            color_code: ColorCode::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 struct Buffer {
     chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+}
+
+impl Buffer {
+    #[allow(dead_code)]
+    pub const fn new() -> Buffer {
+        let chars = [[ScreenChar::default(); BUFFER_WIDTH]; BUFFER_HEIGHT];
+        Buffer { chars }
+    }
 }
 
 pub struct Writer {
