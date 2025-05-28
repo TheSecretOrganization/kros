@@ -11,5 +11,5 @@ panic = "abort"
 lto = true
 
 [build]
-target = "i686-unknown-none.json"
 rustflags = ["-C", "link-arg=-Tlink.ld"]
+target = "i686-kros.json"
