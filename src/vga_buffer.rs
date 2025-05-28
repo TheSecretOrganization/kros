@@ -1,4 +1,5 @@
 use crate::io::outb;
+use crate::spin::Spinlock;
 use core::{
     fmt,
     ptr::{read_volatile, write_volatile},
@@ -14,6 +15,11 @@ const CURSOR_HIGH: u8 = 0x0E;
 const BLANK: u8 = b' ';
 const UNPRINTABLE: u8 = b'*';
 
+pub static WRITER: Spinlock<Writer> = Spinlock::new(Writer {
+    row_position: 0,
+    column_position: 0,
+    color_code: ColorCode::default(),
+});
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
@@ -66,7 +72,7 @@ pub enum Color {
 struct ColorCode(u8);
 
 impl ColorCode {
-    fn new(foreground: Color, background: Color) -> ColorCode {
+    const fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
 
@@ -103,29 +109,21 @@ impl Buffer {
         let chars = [[ScreenChar::default(); BUFFER_WIDTH]; BUFFER_HEIGHT];
         Buffer { chars }
     }
+
+    pub fn vga() -> &'static mut Buffer {
+        unsafe { &mut *(BUFFER_ADDRESS as *mut Buffer) }
+    }
 }
 
 pub struct Writer {
     row_position: usize,
     column_position: usize,
     color_code: ColorCode,
-    buffer: &'static mut Buffer,
 }
 
 impl Writer {
-    pub fn new() -> Writer {
-        let mut writer = Writer {
-            row_position: 0,
-            column_position: 0,
-            color_code: ColorCode::new(DEFAULT_FOREGROUND, DEFAULT_BACKGROUND),
-            buffer: unsafe { &mut *(BUFFER_ADDRESS as *mut Buffer) },
-        };
-        writer.clear_screen();
-        writer
-    }
-
     fn read_byte_at(&mut self, row: usize, col: usize) -> u8 {
-        unsafe { read_volatile(&self.buffer.chars[row][col]).ascii_character }
+        unsafe { read_volatile(&Buffer::vga().chars[row][col]).ascii_character }
     }
 
     fn move_cursor_at(&mut self, row: usize, col: usize) {
@@ -145,7 +143,7 @@ impl Writer {
         let color_code = self.color_code;
         unsafe {
             write_volatile(
-                &mut self.buffer.chars[row][col],
+                &mut Buffer::vga().chars[row][col],
                 ScreenChar {
                     ascii_character: byte,
                     color_code,

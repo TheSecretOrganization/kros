@@ -9,6 +9,7 @@ mod vga_buffer;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn kmain() {
+    clear_screen!();
     println!("42");
 }
 
