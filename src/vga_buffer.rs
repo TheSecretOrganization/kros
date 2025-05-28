@@ -3,8 +3,6 @@ use core::{
     fmt,
     ptr::{read_volatile, write_volatile},
 };
-use lazy_static::lazy_static;
-use spin::Mutex;
 
 const DEFAULT_FOREGROUND: Color = Color::LightBlue;
 const DEFAULT_BACKGROUND: Color = Color::Black;
@@ -18,9 +16,6 @@ const CURSOR_HIGH: u8 = 0x0E;
 const BLANK: u8 = b' ';
 const UNPRINTABLE: u8 = b'*';
 
-lazy_static! {
-    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer::new());
-}
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
