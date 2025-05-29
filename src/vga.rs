@@ -21,15 +21,9 @@ pub static WRITER: Spinlock<Writer> = Spinlock::new(Writer {
     color_code: ColorCode::default(),
 });
 
-#[doc(hidden)]
-pub fn _print(args: fmt::Arguments) {
-    use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
-}
-
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::vga::_print(format_args!($($arg)*)));
 }
 
 #[macro_export]
@@ -41,8 +35,14 @@ macro_rules! println {
 #[macro_export]
 macro_rules! clear_screen {
     () => {
-        $crate::vga_buffer::WRITER.lock().clear_screen()
+        $crate::vga::WRITER.lock().clear_screen()
     };
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
 }
 
 #[allow(dead_code)]

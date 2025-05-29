@@ -5,7 +5,7 @@ use core::panic::PanicInfo;
 
 mod io;
 mod spin;
-mod vga_buffer;
+mod vga;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn kmain() {
