@@ -15,23 +15,29 @@ const CURSOR_HIGH: u8 = 0x0E;
 const BLANK: u8 = b' ';
 const UNPRINTABLE: u8 = b'*';
 
+/// Global VGA text writer protected by a spinlock.
+///
+/// This static allows safe concurrent access to VGA text buffer from multiple threads.
 pub static WRITER: Spinlock<Writer> = Spinlock::new(Writer {
     row_position: 0,
     column_position: 0,
     color_code: ColorCode::default(),
 });
 
+/// Print text to the screen.
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ($crate::vga::_print(format_args!($($arg)*)));
 }
 
+/// Print to the screen with a newline.
 #[macro_export]
 macro_rules! println {
     () => ($crate::print!("\n"));
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
+/// Clear the screen buffer.
 #[macro_export]
 macro_rules! clear_screen {
     () => {
@@ -39,12 +45,14 @@ macro_rules! clear_screen {
     };
 }
 
+/// Internal function used by `print!` and `println!` macros to write formatted text.
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
 }
 
+/// VGA text mode color codes.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -67,20 +75,24 @@ pub enum Color {
     White = 15,
 }
 
+/// A combined foreground/background VGA color code.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 struct ColorCode(u8);
 
 impl ColorCode {
+    /// Creates a new color code.
     const fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
 
+    /// Default color: light blue text on black background.
     const fn default() -> ColorCode {
         ColorCode::new(Color::LightBlue, Color::Black)
     }
 }
 
+/// A single character and its associated color on the screen.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 struct ScreenChar {
@@ -97,6 +109,7 @@ impl ScreenChar {
     }
 }
 
+/// VGA text buffer, a 2D grid of `ScreenChar`s.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 struct Buffer {
@@ -104,17 +117,20 @@ struct Buffer {
 }
 
 impl Buffer {
+    /// Creates a blank buffer (compile-time only, not used at runtime).
     #[allow(dead_code)]
     pub const fn new() -> Buffer {
         let chars = [[ScreenChar::default(); BUFFER_WIDTH]; BUFFER_HEIGHT];
         Buffer { chars }
     }
 
+    /// Returns a mutable reference to the VGA buffer in memory.
     pub fn vga() -> &'static mut Buffer {
         unsafe { &mut *(BUFFER_ADDRESS as *mut Buffer) }
     }
 }
 
+/// Text writer for VGA memory. Manages cursor position and writing.
 pub struct Writer {
     row_position: usize,
     column_position: usize,
@@ -122,10 +138,12 @@ pub struct Writer {
 }
 
 impl Writer {
+    /// Reads the byte at the given screen position (volatile read).
     fn read_byte_at(&mut self, row: usize, col: usize) -> u8 {
         unsafe { read_volatile(&Buffer::vga().chars[row][col]).ascii_character }
     }
 
+    /// Moves the VGA hardware cursor to a specific screen position.
     fn move_cursor_at(&mut self, row: usize, col: usize) {
         let pos: u16 = (row * BUFFER_WIDTH + col) as u16;
 
@@ -135,10 +153,12 @@ impl Writer {
         outb(BUFFER_DATA_PORT, ((pos >> 8) & 0xFF) as u8);
     }
 
+    /// Moves the VGA hardware cursor to the current logical position.
     fn move_cursor(&mut self) {
         self.move_cursor_at(self.row_position, self.column_position);
     }
 
+    /// Writes a single byte to the specified position.
     fn write_byte_at(&mut self, byte: u8, row: usize, col: usize) {
         let color_code = self.color_code;
         unsafe {
@@ -152,6 +172,7 @@ impl Writer {
         }
     }
 
+    /// Writes a single byte, handling newlines and character wrapping.
     pub fn write_byte(&mut self, byte: u8) {
         match byte {
             b'\n' => {
@@ -170,12 +191,14 @@ impl Writer {
         }
     }
 
+    /// Writes an entire string to the screen.
     pub fn write_string(&mut self, s: &str) {
         for byte in s.bytes() {
             self.write_byte(byte);
         }
     }
 
+    /// Moves to a new line, scrolling if necessary.
     fn new_line(&mut self) {
         self.column_position = 0;
         if self.row_position < BUFFER_HEIGHT - 1 {
@@ -194,6 +217,7 @@ impl Writer {
         }
     }
 
+    /// Moves the cursor back to the previous non-blank character.
     fn move_to_previous_non_blank(&mut self) {
         while self.row_position > 0 {
             self.row_position -= 1;
@@ -208,6 +232,7 @@ impl Writer {
         }
     }
 
+    /// Deletes the last character from the screen.
     #[allow(dead_code)]
     pub fn delete_byte(&mut self) {
         if self.column_position > 0 {
@@ -219,12 +244,14 @@ impl Writer {
         self.move_cursor();
     }
 
+    /// Clears a specific row.
     fn clear_row(&mut self, row: usize) {
         for col in 0..BUFFER_WIDTH {
             self.write_byte_at(BLANK, row, col);
         }
     }
 
+    /// Clears the entire screen buffer.
     pub fn clear_screen(&mut self) {
         for row in 0..BUFFER_HEIGHT {
             self.clear_row(row);
@@ -235,6 +262,7 @@ impl Writer {
     }
 }
 
+/// Implements the core `fmt::Write` trait, allowing use with `write!()` macros.
 impl fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_string(s);
