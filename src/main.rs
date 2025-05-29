@@ -15,6 +15,6 @@ pub extern "C" fn kmain() {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    println!("{}", info);
+    println!("{:?}", info);
     loop {}
 }
