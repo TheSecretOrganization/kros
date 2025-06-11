@@ -68,7 +68,7 @@ jobs:
     steps:
       - name: check for failed jobs
         if: ${{ contains(join(needs.*.result, ','), 'failure') }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
             script: |
               core.setFailed('A step have failed')
