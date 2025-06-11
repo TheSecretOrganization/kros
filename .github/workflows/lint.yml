@@ -59,3 +59,16 @@ jobs:
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
           ./actionlint -color
+
+  require:
+    name: required
+    needs: [ lint-actions, lint-rust ]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: check for failed jobs
+        if: ${{ contains(join(needs.*.result, ','), 'failure') }}
+        uses: actions/github-script@v7
+        with:
+            script: |
+              core.setFailed('A step has failed')
