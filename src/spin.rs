@@ -48,7 +48,7 @@ impl<T> Spinlock<T> {
     /// let mut guard = lock.lock();
     /// *guard += 1;
     /// ```
-    pub fn lock(&self) -> SpinlockGuard<T> {
+    pub fn lock(&self) -> SpinlockGuard<'_, T> {
         while self
             .lock
             .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
